@@ -5,1203 +5,1027 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>POINTLESS — Game Engine</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #06060f;
-    --bg-mid: #0d0d2b;
-    --col-blue: #1a1a5e;
-    --col-fill: #2233cc;
-    --col-glow: #4455ff;
-    --col-gold: #ffd700;
-    --col-red: #ff3333;
-    --col-white: #e8eaff;
-    --col-muted: #6670aa;
-    --col-accent: #00d4ff;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body: 'Barlow', sans-serif;
+    --bg-deep:     #03040f;
+    --bg-mid:      #060a1e;
+    --bg-panel:    rgba(10,15,45,0.85);
+    --blue-glow:   #1a4fff;
+    --cyan:        #00d4ff;
+    --gold:        #ffd700;
+    --gold-glow:   #ffaa00;
+    --red:         #ff2233;
+    --white:       #f0f4ff;
+    --muted:       #7080aa;
+    --border:      rgba(0,180,255,0.18);
+    --col-fill:    linear-gradient(180deg, #00d4ff 0%, #1a4fff 60%, #0a0030 100%);
+    --col-empty:   #0a0d1e;
+    --col-width:   90px;
+    --col-height:  520px;
+    --transition-drop: 0.06s linear;
   }
 
-- { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
 background: var(–bg-deep);
-color: var(–col-white);
-font-family: var(–font-body);
+color: var(–white);
+font-family: ‘Barlow Condensed’, sans-serif;
 min-height: 100vh;
 overflow-x: hidden;
-position: relative;
 }
 
-/* Animated starfield bg */
-body::before {
-content: ‘’;
-position: fixed;
-inset: 0;
+/* ── STARFIELD ─────────────────────────────────────── */
+#stars {
+position: fixed; inset: 0; pointer-events: none; z-index: 0;
 background:
-radial-gradient(ellipse at 20% 50%, rgba(30, 30, 120, 0.4) 0%, transparent 60%),
-radial-gradient(ellipse at 80% 20%, rgba(20, 10, 80, 0.5) 0%, transparent 50%),
-radial-gradient(ellipse at 50% 90%, rgba(0, 30, 100, 0.3) 0%, transparent 60%);
-pointer-events: none;
-z-index: 0;
+radial-gradient(ellipse 80% 50% at 50% 0%, rgba(26,79,255,0.12) 0%, transparent 70%),
+radial-gradient(ellipse 60% 40% at 80% 100%, rgba(0,212,255,0.08) 0%, transparent 60%);
+}
+#stars::before, #stars::after {
+content: ‘’;
+position: absolute; inset: 0;
+background-image:
+radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+radial-gradient(1px 1px at 25% 55%, rgba(255,255,255,0.4) 0%, transparent 100%),
+radial-gradient(1px 1px at 40% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+radial-gradient(1px 1px at 55% 75%, rgba(255,255,255,0.3) 0%, transparent 100%),
+radial-gradient(1px 1px at 70% 35%, rgba(255,255,255,0.6) 0%, transparent 100%),
+radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
+radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.3) 0%, transparent 100%),
+radial-gradient(1.5px 1.5px at 60% 50%, rgba(0,212,255,0.7) 0%, transparent 100%),
+radial-gradient(1.5px 1.5px at 30% 30%, rgba(100,160,255,0.6) 0%, transparent 100%);
+background-size: 100% 100%;
 }
 
-/* ===== TOP BAR ===== */
-#topbar {
-position: fixed;
-top: 0; left: 0; right: 0;
-z-index: 100;
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 10px 24px;
-background: rgba(6, 6, 20, 0.85);
-backdrop-filter: blur(12px);
-border-bottom: 1px solid rgba(68, 85, 255, 0.25);
+/* ── LAYOUT ─────────────────────────────────────────── */
+#root {
+position: relative; z-index: 1;
+max-width: 1200px;
+margin: 0 auto;
+padding: 24px 20px 60px;
+display: flex; flex-direction: column; gap: 24px;
 }
 
-#topbar .logo {
-font-family: var(–font-display);
-font-size: 1.8rem;
-letter-spacing: 0.12em;
-color: var(–col-accent);
-text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+/* ── ADMIN PANEL ───────────────────────────────────── */
+#admin-toggle {
+align-self: flex-end;
+background: none;
+border: 1px solid var(–border);
+color: var(–muted);
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+letter-spacing: 2px;
+padding: 6px 16px;
+cursor: pointer;
+border-radius: 2px;
+transition: all .2s;
+}
+#admin-toggle:hover { color: var(–cyan); border-color: var(–cyan); }
+
+#admin-panel {
+background: var(–bg-panel);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 24px;
+backdrop-filter: blur(8px);
+box-shadow: 0 0 40px rgba(0,100,255,0.08);
+overflow: hidden;
+max-height: 1000px;
+transition: max-height .4s ease, padding .4s ease, opacity .3s ease;
+}
+#admin-panel.hidden { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; }
+
+.admin-title {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px;
+letter-spacing: 3px;
+color: var(–cyan);
+text-transform: uppercase;
+margin-bottom: 20px;
+border-bottom: 1px solid var(–border);
+padding-bottom: 12px;
 }
 
-#topbar .logo span {
-color: var(–col-gold);
-text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+.admin-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 24px;
+}
+@media(max-width:700px){ .admin-grid { grid-template-columns: 1fr; } }
+
+.admin-form { display: flex; flex-direction: column; gap: 12px; }
+
+.field-label {
+font-size: 11px; letter-spacing: 2px; color: var(–muted);
+text-transform: uppercase; margin-bottom: 4px;
+font-family: ‘Share Tech Mono’, monospace;
 }
 
-.btn-group { display: flex; gap: 10px; align-items: center; }
+.inp {
+background: rgba(0,20,60,0.7);
+border: 1px solid var(–border);
+border-radius: 4px;
+color: var(–white);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 16px;
+padding: 8px 12px;
+width: 100%;
+outline: none;
+transition: border-color .2s;
+}
+.inp:focus { border-color: var(–cyan); }
+.inp::placeholder { color: var(–muted); }
+
+.answers-builder { display: flex; flex-direction: column; gap: 8px; }
+.answer-row { display: grid; grid-template-columns: 1fr 80px 32px; gap: 6px; align-items: center; }
+.answer-row .inp { font-size: 14px; }
 
 .btn {
-font-family: var(–font-body);
-font-weight: 600;
-font-size: 0.78rem;
-letter-spacing: 0.1em;
-text-transform: uppercase;
-border: none;
-cursor: pointer;
-padding: 8px 16px;
-border-radius: 4px;
-transition: all 0.2s;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700; font-size: 14px;
+letter-spacing: 2px; text-transform: uppercase;
+border: none; border-radius: 4px; cursor: pointer;
+padding: 10px 20px; transition: all .2s;
 }
+.btn-cyan { background: var(–cyan); color: #000; }
+.btn-cyan:hover { background: #00f0ff; box-shadow: 0 0 18px rgba(0,212,255,0.4); }
+.btn-ghost { background: transparent; border: 1px solid var(–border); color: var(–muted); }
+.btn-ghost:hover { border-color: var(–red); color: var(–red); }
+.btn-icon { background: transparent; border: 1px solid var(–border); color: var(–muted);
+border-radius: 4px; width: 32px; height: 32px; font-size: 16px; cursor: pointer;
+display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.btn-icon:hover { border-color: var(–red); color: var(–red); }
+.btn-sm { font-size: 12px; padding: 6px 12px; }
 
-.btn-mode {
-background: rgba(68, 85, 255, 0.2);
-color: var(–col-accent);
-border: 1px solid rgba(0, 212, 255, 0.4);
-}
-.btn-mode:hover { background: rgba(0, 212, 255, 0.2); }
+/* Question list */
+.q-list { display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
+.q-list::-webkit-scrollbar { width: 4px; }
+.q-list::-webkit-scrollbar-track { background: transparent; }
+.q-list::-webkit-scrollbar-thumb { background: var(–border); border-radius: 2px; }
 
-.btn-danger {
-background: rgba(255, 50, 50, 0.1);
-color: #ff7777;
-border: 1px solid rgba(255, 50, 50, 0.3);
-}
-.btn-danger:hover { background: rgba(255, 50, 50, 0.2); }
-
-.btn-next {
-background: rgba(68, 85, 255, 0.3);
-color: var(–col-white);
-border: 1px solid rgba(68, 85, 255, 0.5);
-}
-.btn-next:hover { background: rgba(68, 85, 255, 0.5); }
-
-.mode-badge {
-font-family: var(–font-display);
-font-size: 0.9rem;
-letter-spacing: 0.15em;
-padding: 4px 12px;
-border-radius: 20px;
-background: rgba(255, 215, 0, 0.1);
-border: 1px solid rgba(255, 215, 0, 0.3);
-color: var(–col-gold);
-}
-
-/* ===== MAIN LAYOUT ===== */
-#main { padding-top: 65px; position: relative; z-index: 1; }
-
-/* ===== ADMIN MODE ===== */
-#admin-mode {
-max-width: 780px;
-margin: 0 auto;
-padding: 40px 24px;
-}
-
-.admin-header {
-font-family: var(–font-display);
-font-size: 2.5rem;
-letter-spacing: 0.1em;
-color: var(–col-col-white);
-margin-bottom: 6px;
-}
-
-.admin-sub {
-color: var(–col-muted);
-font-size: 0.9rem;
-font-weight: 300;
-margin-bottom: 36px;
-}
-
-.form-section {
-background: rgba(255,255,255,0.03);
-border: 1px solid rgba(68, 85, 255, 0.2);
-border-radius: 12px;
-padding: 28px;
-margin-bottom: 28px;
-}
-
-.form-section h3 {
-font-family: var(–font-display);
-font-size: 1.3rem;
-letter-spacing: 0.1em;
-color: var(–col-accent);
-margin-bottom: 20px;
-}
-
-label {
-display: block;
-font-size: 0.78rem;
-font-weight: 600;
-letter-spacing: 0.1em;
-text-transform: uppercase;
-color: var(–col-muted);
-margin-bottom: 6px;
-}
-
-input[type=“text”], input[type=“number”], textarea {
-width: 100%;
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(68, 85, 255, 0.3);
+.q-card {
+background: rgba(0,10,30,0.6);
+border: 1px solid var(–border);
 border-radius: 6px;
-color: var(–col-white);
-font-family: var(–font-body);
-font-size: 1rem;
-padding: 10px 14px;
-margin-bottom: 16px;
-outline: none;
-transition: border-color 0.2s;
+padding: 12px 14px;
+display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+cursor: pointer; transition: border-color .2s;
 }
+.q-card:hover { border-color: rgba(0,212,255,0.4); }
+.q-card.active { border-color: var(–cyan); box-shadow: 0 0 12px rgba(0,212,255,0.15); }
+.q-card-title { font-size: 15px; font-weight: 600; color: var(–white); margin-bottom: 4px; }
+.q-card-answers { font-family: ‘Share Tech Mono’, monospace; font-size: 11px; color: var(–muted); }
+.q-card-del { flex-shrink: 0; }
 
-input[type=“text”]:focus, input[type=“number”]:focus, textarea:focus {
-border-color: var(–col-accent);
-}
-
-.answer-row {
+/* ── GAME BOARD ────────────────────────────────────── */
+#game-board {
 display: grid;
-grid-template-columns: 1fr 100px 36px;
-gap: 10px;
-margin-bottom: 10px;
-align-items: center;
+grid-template-columns: var(–col-width) 1fr;
+grid-template-rows: auto auto;
+gap: 0 32px;
+align-items: start;
+}
+@media(max-width:600px){
+#game-board { grid-template-columns: 60px 1fr; –col-width:60px; gap: 0 18px; }
 }
 
-.answer-row input { margin-bottom: 0; }
-
-.btn-remove-answer {
-background: rgba(255, 50, 50, 0.1);
-border: 1px solid rgba(255, 50, 50, 0.3);
-color: #ff6666;
-border-radius: 6px;
-width: 36px; height: 40px;
-cursor: pointer;
-font-size: 1.1rem;
-display: flex; align-items: center; justify-content: center;
-transition: all 0.2s;
-}
-.btn-remove-answer:hover { background: rgba(255,50,50,0.25); }
-
-.btn-add-answer {
-background: rgba(0, 212, 255, 0.08);
-border: 1px dashed rgba(0, 212, 255, 0.35);
-color: var(–col-accent);
-border-radius: 6px;
-padding: 10px;
-width: 100%;
-cursor: pointer;
-font-family: var(–font-body);
-font-size: 0.85rem;
-font-weight: 600;
-letter-spacing: 0.08em;
-text-transform: uppercase;
-margin-bottom: 20px;
-transition: all 0.2s;
-}
-.btn-add-answer:hover { background: rgba(0, 212, 255, 0.15); }
-
-.btn-save-q {
-background: linear-gradient(135deg, #2233cc, #4455ff);
-border: none;
-color: white;
-border-radius: 6px;
-padding: 12px 28px;
-cursor: pointer;
-font-family: var(–font-body);
-font-weight: 600;
-font-size: 0.9rem;
-letter-spacing: 0.1em;
-text-transform: uppercase;
-transition: all 0.2s;
-box-shadow: 0 4px 20px rgba(68, 85, 255, 0.3);
-}
-.btn-save-q:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(68, 85, 255, 0.5); }
-
-/* Saved questions list */
-.saved-list { display: flex; flex-direction: column; gap: 12px; }
-
-.saved-q-card {
-background: rgba(255,255,255,0.04);
-border: 1px solid rgba(68, 85, 255, 0.2);
-border-radius: 8px;
-padding: 16px 20px;
-display: flex;
-align-items: center;
-justify-content: space-between;
-gap: 12px;
-}
-
-.saved-q-card .q-title {
-font-weight: 600;
-font-size: 1rem;
-color: var(–col-white);
-flex: 1;
-}
-
-.saved-q-card .q-count {
-color: var(–col-muted);
-font-size: 0.82rem;
-}
-
-.btn-del-q {
-background: none;
-border: 1px solid rgba(255,50,50,0.3);
-color: #ff6666;
-border-radius: 4px;
-padding: 5px 10px;
-cursor: pointer;
-font-size: 0.78rem;
-font-weight: 600;
-letter-spacing: 0.05em;
-text-transform: uppercase;
-transition: all 0.2s;
-font-family: var(–font-body);
-}
-.btn-del-q:hover { background: rgba(255,50,50,0.15); }
-
-.empty-state {
-text-align: center;
-padding: 40px;
-color: var(–col-muted);
-font-style: italic;
-font-weight: 300;
-}
-
-/* ===== PLAY MODE ===== */
-#play-mode {
-display: flex;
-flex-direction: column;
-align-items: center;
-min-height: calc(100vh - 65px);
-padding: 40px 24px 60px;
-gap: 32px;
-}
-
-.play-question {
-text-align: center;
-max-width: 800px;
-}
-
-.play-q-label {
-font-size: 0.78rem;
-font-weight: 600;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–col-muted);
-margin-bottom: 10px;
-}
-
-.play-q-text {
-font-family: var(–font-display);
-font-size: clamp(2rem, 5vw, 3.5rem);
-letter-spacing: 0.05em;
-color: var(–col-white);
-text-shadow: 0 0 40px rgba(68, 85, 255, 0.3);
-line-height: 1.1;
-}
-
-.q-nav {
-font-size: 0.8rem;
-color: var(–col-muted);
-margin-top: 8px;
-font-weight: 300;
-}
-
-/* Score column area */
-.score-area {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 0;
-}
-
-.column-wrap {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 12px;
-}
-
-.column-score-num {
-font-family: var(–font-display);
-font-size: 3.5rem;
-letter-spacing: 0.05em;
-color: var(–col-white);
-transition: color 0.3s;
-min-width: 120px;
-text-align: center;
-}
-
-.score-column-outer {
-width: 110px;
-height: 360px;
-background: rgba(255,255,255,0.04);
-border: 1px solid rgba(68, 85, 255, 0.3);
-border-radius: 8px;
-overflow: hidden;
+/* ── THE COLUMN ────────────────────────────────────── */
+#column-wrap {
+grid-row: 1 / 3;
+display: flex; flex-direction: column; align-items: center; gap: 0;
 position: relative;
-box-shadow: 0 0 30px rgba(0,0,0,0.5) inset;
 }
 
-.score-column-fill {
+.col-label-top, .col-label-bot {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 13px; color: var(–muted); letter-spacing: 1px;
+}
+.col-label-top { margin-bottom: 8px; }
+.col-label-bot { margin-top: 8px; color: var(–gold); font-weight: 700; letter-spacing: 3px; }
+
+#column-outer {
+width: var(–col-width);
+height: var(–col-height);
+background: var(–col-empty);
+border: 2px solid rgba(0,180,255,0.25);
+border-radius: 6px 6px 4px 4px;
+position: relative;
+overflow: hidden;
+box-shadow:
+inset 0 0 20px rgba(0,0,0,0.6),
+0 0 24px rgba(0,100,255,0.15),
+0 0 2px rgba(0,212,255,0.3);
+}
+
+/* Tick marks on left edge */
+#column-outer::before {
+content: ‘’;
+position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+background: repeating-linear-gradient(
+180deg,
+transparent 0%,
+transparent calc(10% - 1px),
+rgba(0,180,255,0.25) calc(10% - 1px),
+rgba(0,180,255,0.25) 10%
+);
+z-index: 2;
+}
+
+#column-fill {
 position: absolute;
 bottom: 0; left: 0; right: 0;
-height: 0%;
-background: linear-gradient(to top, #1a1a99, #2233cc, var(–col-glow));
-border-radius: 0 0 7px 7px;
-transition: height 0.05s linear;
+background: var(–col-fill);
+transition: height var(–transition-drop);
+height: 100%;
+box-shadow: 0 -8px 30px rgba(0,212,255,0.5);
 }
 
-.score-column-fill.pointless {
-background: linear-gradient(to top, #997700, var(–col-gold), #fff8c0) !important;
-box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+/* Shimmer on fill */
+#column-fill::after {
+content: ‘’;
+position: absolute; inset: 0;
+background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+animation: shimmer 2s ease-in-out infinite;
+}
+@keyframes shimmer {
+0%,100% { opacity: 0.4; transform: translateX(-100%); }
+50% { opacity: 1; transform: translateX(100%); }
 }
 
-.score-column-fill.wrong {
-background: linear-gradient(to top, #660000, var(–col-red), #ff9999);
-}
-
-/* Tick marks */
-.tick-marks {
+/* Score notch */
+#score-notch {
 position: absolute;
-inset: 0;
-pointer-events: none;
+right: -28px;
+width: 26px; height: 26px;
+background: var(–bg-deep);
+border: 2px solid var(–cyan);
+border-radius: 4px;
+display: flex; align-items: center; justify-content: center;
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 11px; color: var(–cyan);
+transition: bottom var(–transition-drop);
+bottom: 100%;
+box-shadow: 0 0 10px rgba(0,212,255,0.4);
+z-index: 3;
 }
 
-.tick {
-position: absolute;
-left: 0;
-width: 12px;
-height: 1px;
-background: rgba(255,255,255,0.2);
+/* Number labels on column */
+.col-num {
+position: absolute; right: 4px;
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 9px; color: rgba(0,212,255,0.35);
+line-height: 1; pointer-events: none; z-index: 4;
 }
 
-.tick.major {
-width: 20px;
-background: rgba(255,255,255,0.4);
+/* ── DISPLAY PANEL ─────────────────────────────────── */
+#display-panel {
+background: rgba(5,8,28,0.9);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 28px 32px;
+display: flex; flex-direction: column; gap: 20px;
+box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 0 30px rgba(0,50,200,0.1);
+backdrop-filter: blur(4px);
+min-height: 280px;
 }
 
-.tick-label {
-position: absolute;
-left: 6px;
-font-size: 0.6rem;
-color: rgba(255,255,255,0.4);
-transform: translateY(-50%);
-font-family: var(–font-display);
-letter-spacing: 0.05em;
+#question-select-row {
+display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 
-/* Input area */
-.answer-input-area {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 16px;
-width: 100%;
-max-width: 500px;
+#question-select {
+flex: 1; min-width: 180px;
+background: rgba(0,10,30,0.9);
+border: 1px solid var(–border);
+border-radius: 4px;
+color: var(–white);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 16px; padding: 8px 12px;
+outline: none; cursor: pointer;
+transition: border-color .2s;
+}
+#question-select:focus { border-color: var(–cyan); }
+#question-select option { background: #060a1e; }
+
+#q-display {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: clamp(26px, 4vw, 46px);
+color: var(–white);
+letter-spacing: 2px;
+line-height: 1.1;
+text-shadow: 0 0 30px rgba(0,180,255,0.3);
+min-height: 56px;
 }
 
-.answer-input-wrap {
-display: flex;
-gap: 12px;
-width: 100%;
+/* ── INPUT ROW ─────────────────────────────────────── */
+#input-row {
+display: flex; gap: 10px; align-items: stretch;
 }
 
 #answer-input {
 flex: 1;
-background: rgba(255,255,255,0.06);
-border: 1px solid rgba(68, 85, 255, 0.4);
-border-radius: 8px;
-color: var(–col-white);
-font-family: var(–font-display);
-font-size: 1.6rem;
-letter-spacing: 0.05em;
-padding: 14px 20px;
+background: rgba(0,10,30,0.9);
+border: 2px solid var(–border);
+border-radius: 4px;
+color: var(–white);
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: 22px; font-weight: 600;
+padding: 12px 18px;
 outline: none;
-text-transform: uppercase;
-transition: border-color 0.2s;
-margin-bottom: 0;
+transition: border-color .2s, box-shadow .2s;
+text-transform: uppercase; letter-spacing: 1px;
 }
+#answer-input:focus { border-color: var(–cyan); box-shadow: 0 0 16px rgba(0,212,255,0.2); }
+#answer-input::placeholder { color: var(–muted); font-weight: 300; }
 
-#answer-input:focus { border-color: var(–col-accent); }
-#answer-input::placeholder { color: rgba(255,255,255,0.15); font-size: 1.2rem; }
-
-.btn-submit {
-background: linear-gradient(135deg, #2233cc, #4455ff);
-border: none;
-color: white;
-border-radius: 8px;
-padding: 14px 24px;
-cursor: pointer;
-font-family: var(–font-display);
-font-size: 1.4rem;
-letter-spacing: 0.1em;
-transition: all 0.2s;
-white-space: nowrap;
-box-shadow: 0 4px 20px rgba(68, 85, 255, 0.35);
+#submit-btn {
+font-size: 16px; padding: 12px 28px;
+background: var(–blue-glow);
+color: #fff;
+border: none; border-radius: 4px;
+font-family: ‘Barlow Condensed’, sans-serif;
+font-weight: 700; letter-spacing: 3px;
+text-transform: uppercase; cursor: pointer;
+transition: all .2s;
+box-shadow: 0 0 20px rgba(26,79,255,0.4);
 }
-.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(68, 85, 255, 0.5); }
-.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+#submit-btn:hover { background: #2255ff; box-shadow: 0 0 30px rgba(26,79,255,0.6); }
 
-/* Result display */
-.result-display {
+/* ── RESULT DISPLAY ────────────────────────────────── */
+#result-area {
 min-height: 80px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-gap: 8px;
-width: 100%;
-max-width: 600px;
+display: flex; align-items: center; justify-content: center;
+position: relative;
 }
 
-.result-answer {
-font-family: var(–font-display);
-font-size: 2rem;
-letter-spacing: 0.08em;
+#result-msg {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: clamp(32px, 6vw, 72px);
+letter-spacing: 4px;
+opacity: 0;
+transition: opacity .3s;
 text-align: center;
 }
+#result-msg.show { opacity: 1; }
+#result-msg.correct { color: var(–cyan); text-shadow: 0 0 40px rgba(0,212,255,0.7); }
+#result-msg.wrong   { color: var(–red);  text-shadow: 0 0 40px rgba(255,34,51,0.7); }
+#result-msg.pointless { color: var(–gold); text-shadow: 0 0 60px var(–gold-glow); }
 
-.result-tag {
-font-size: 0.8rem;
-font-weight: 600;
-letter-spacing: 0.15em;
-text-transform: uppercase;
-padding: 4px 16px;
-border-radius: 20px;
+/* big X */
+#big-x {
+position: absolute;
+font-size: clamp(80px, 14vw, 160px);
+font-family: ‘Bebas Neue’, sans-serif;
+color: var(–red);
+text-shadow: 0 0 60px rgba(255,34,51,0.8);
+opacity: 0;
+transform: scale(1.5);
+transition: opacity .3s, transform .3s;
+pointer-events: none; line-height: 1;
 }
+#big-x.show { opacity: 1; transform: scale(1); }
 
-.result-tag.correct {
-background: rgba(68, 85, 255, 0.2);
-color: var(–col-accent);
-border: 1px solid rgba(0, 212, 255, 0.4);
+/* score badge */
+#score-badge {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: clamp(14px, 2vw, 20px);
+color: var(–muted);
+letter-spacing: 2px;
 }
+#score-badge span { color: var(–cyan); }
 
-.result-tag.wrong {
-background: rgba(255, 50, 50, 0.15);
-color: #ff7777;
-border: 1px solid rgba(255, 50, 50, 0.4);
+/* ── POINTLESS OVERLAY ─────────────────────────────── */
+#pointless-overlay {
+position: fixed; inset: 0; z-index: 100;
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+pointer-events: none;
+opacity: 0;
+transition: opacity .4s;
+background: rgba(0,0,0,0.7);
 }
+#pointless-overlay.active { opacity: 1; pointer-events: all; }
 
-.result-tag.pointless-tag {
-background: rgba(255, 215, 0, 0.15);
-color: var(–col-gold);
-border: 1px solid rgba(255, 215, 0, 0.5);
-}
-
-/* POINTLESS banner */
 #pointless-banner {
-position: fixed;
-inset: 0;
-z-index: 200;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-pointer-events: none;
-opacity: 0;
-transition: opacity 0.5s;
-}
-
-#pointless-banner.visible { opacity: 1; pointer-events: auto; }
-
-#pointless-banner::before {
-content: ‘’;
-position: absolute;
-inset: 0;
-background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.12) 0%, transparent 70%);
-}
-
-.banner-word {
-font-family: var(–font-display);
-font-size: clamp(5rem, 15vw, 12rem);
-letter-spacing: 0.1em;
-color: var(–col-gold);
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: clamp(60px, 12vw, 140px);
+letter-spacing: 8px;
+color: var(–gold);
 text-shadow:
-0 0 40px rgba(255, 215, 0, 0.8),
-0 0 80px rgba(255, 215, 0, 0.4),
-0 0 120px rgba(255, 215, 0, 0.2);
-animation: bannerPulse 1.5s ease-in-out infinite;
-position: relative;
+0 0 40px var(–gold-glow),
+0 0 100px rgba(255,170,0,0.6),
+0 0 200px rgba(255,170,0,0.3);
+animation: pulseGold 1s ease-in-out infinite;
+}
+@keyframes pulseGold {
+0%,100% { text-shadow: 0 0 40px var(–gold-glow), 0 0 100px rgba(255,170,0,0.6); transform: scale(1); }
+50% { text-shadow: 0 0 80px var(–gold-glow), 0 0 180px rgba(255,170,0,0.9), 0 0 300px rgba(255,170,0,0.5); transform: scale(1.04); }
+}
+#pointless-sub {
+font-family: ‘Barlow Condensed’, sans-serif;
+font-size: clamp(16px, 3vw, 28px);
+letter-spacing: 6px;
+color: rgba(255,215,0,0.7);
+margin-top: 12px; text-transform: uppercase;
+}
+#pointless-dismiss {
+margin-top: 48px;
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 12px; letter-spacing: 3px;
+color: rgba(255,255,255,0.4);
+background: none; border: 1px solid rgba(255,255,255,0.15);
+padding: 8px 24px; border-radius: 2px; cursor: pointer;
+transition: all .2s; text-transform: uppercase;
+}
+#pointless-dismiss:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+
+/* Gold confetti lines */
+#pointless-overlay::before {
+content: ‘’;
+position: absolute; inset: 0;
+background: repeating-linear-gradient(
+45deg,
+transparent 0%,
+transparent 48%,
+rgba(255,215,0,0.03) 48%,
+rgba(255,215,0,0.03) 52%,
+transparent 52%,
+transparent 100%
+);
+background-size: 30px 30px;
+animation: scanlines 2s linear infinite;
+}
+@keyframes scanlines { to { background-position: 30px 30px; } }
+
+/* ── HISTORY TICKER ────────────────────────────────── */
+#history-wrap {
+border-top: 1px solid var(–border);
+padding-top: 16px;
+overflow: hidden;
+}
+.history-label { font-family: ‘Share Tech Mono’, monospace; font-size: 10px; letter-spacing: 3px; color: var(–muted); margin-bottom: 8px; }
+#history-list {
+display: flex; gap: 10px; flex-wrap: wrap;
+}
+.hist-chip {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 12px; padding: 4px 10px;
+border-radius: 3px; letter-spacing: 1px;
+}
+.hist-chip.ok { background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3); color: var(–cyan); }
+.hist-chip.fail { background: rgba(255,34,51,0.1); border: 1px solid rgba(255,34,51,0.25); color: var(–red); }
+.hist-chip.zero { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.4); color: var(–gold); }
+
+/* ── RESET CONTROLS ────────────────────────────────── */
+#controls-row {
+display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
 }
 
-.banner-sub {
-font-family: var(–font-display);
-font-size: clamp(1.2rem, 3vw, 2rem);
-letter-spacing: 0.4em;
-color: rgba(255, 215, 0, 0.6);
-margin-top: 12px;
-position: relative;
+/* ── SCANLINE OVERLAY ──────────────────────────────── */
+body::after {
+content: ‘’; pointer-events: none;
+position: fixed; inset: 0; z-index: 999;
+background: repeating-linear-gradient(
+180deg,
+transparent 0px, transparent 2px,
+rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px
+);
+mix-blend-mode: multiply;
 }
 
-.banner-dismiss {
-margin-top: 40px;
-background: rgba(255, 215, 0, 0.15);
-border: 1px solid rgba(255, 215, 0, 0.4);
-color: var(–col-gold);
-border-radius: 8px;
-padding: 12px 36px;
-cursor: pointer;
-font-family: var(–font-display);
-font-size: 1.4rem;
-letter-spacing: 0.15em;
-pointer-events: auto;
-transition: all 0.2s;
-position: relative;
-}
-.banner-dismiss:hover { background: rgba(255, 215, 0, 0.25); }
-
-@keyframes bannerPulse {
-0%, 100% { transform: scale(1); }
-50% { transform: scale(1.03); }
-}
-
-/* Wrong X animation */
-.wrong-x {
-font-size: 5rem;
-color: var(–col-red);
-text-shadow: 0 0 30px rgba(255, 50, 50, 0.7);
-animation: wrongShake 0.5s ease;
-}
-
-@keyframes wrongShake {
-0%  { transform: translateX(0) scale(0.5); opacity: 0; }
-30% { transform: translateX(-8px) scale(1.1); }
-60% { transform: translateX(8px); }
-100%{ transform: translateX(0) scale(1); opacity: 1; }
-}
-
-/* No questions state */
-.no-questions {
-text-align: center;
-padding: 80px 24px;
-color: var(–col-muted);
-}
-
-.no-questions .icon { font-size: 3rem; margin-bottom: 16px; }
-
-.no-questions h2 {
-font-family: var(–font-display);
-font-size: 2rem;
-letter-spacing: 0.1em;
-color: rgba(255,255,255,0.3);
-margin-bottom: 10px;
-}
-
-.no-questions p { font-weight: 300; font-size: 0.95rem; }
-
-/* Divider */
-hr.section-divider {
-border: none;
-border-top: 1px solid rgba(68, 85, 255, 0.15);
-margin: 32px 0;
-}
-
-/* Toast */
-#toast {
-position: fixed;
-bottom: 24px;
-left: 50%;
-transform: translateX(-50%) translateY(80px);
-background: rgba(30, 35, 90, 0.95);
-border: 1px solid rgba(0, 212, 255, 0.4);
-color: var(–col-accent);
-padding: 10px 24px;
-border-radius: 8px;
-font-size: 0.85rem;
-font-weight: 600;
-letter-spacing: 0.1em;
-text-transform: uppercase;
-transition: transform 0.3s ease;
-z-index: 300;
-backdrop-filter: blur(10px);
-}
-
-#toast.show { transform: translateX(-50%) translateY(0); }
-
-/* Score column side labels — hidden, labels now rendered inside column */
-.column-side-labels { display: none; }
-
-.col-glow-effect {
-position: absolute;
-inset: 0;
-border-radius: 8px;
+/* ── RED FLASH OVERLAY ─────────────────────────────── */
+#red-flash {
+position: fixed; inset: 0; z-index: 90;
+background: #cc0000;
 pointer-events: none;
 opacity: 0;
-transition: opacity 0.5s;
-box-shadow: 0 0 0 3px var(–col-gold), 0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3);
 }
-.col-glow-effect.active { opacity: 1; }
-
-/* Particle container for pointless */
-#particles { position: fixed; inset: 0; pointer-events: none; z-index: 190; }
-
-.particle {
-position: absolute;
-width: 6px;
-height: 6px;
-border-radius: 50%;
-background: var(–col-gold);
-animation: particleFly var(–dur, 2s) ease-out forwards;
+#red-flash.flash {
+animation: redFlash 1.1s ease-out forwards;
+}
+@keyframes redFlash {
+0%   { opacity: 0.85; }
+30%  { opacity: 0.75; }
+100% { opacity: 0; }
 }
 
-@keyframes particleFly {
-0% { transform: translate(0, 0) scale(1); opacity: 1; }
-100% { transform: translate(var(–tx, 0px), var(–ty, -300px)) scale(0); opacity: 0; }
+/* ── TOAST ─────────────────────────────────────────── */
+#toast {
+position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+background: rgba(10,20,50,0.95); border: 1px solid var(–cyan);
+color: var(–cyan); font-family: ‘Share Tech Mono’, monospace;
+font-size: 13px; letter-spacing: 2px;
+padding: 10px 24px; border-radius: 4px;
+opacity: 0; transition: all .3s; pointer-events: none;
+box-shadow: 0 0 20px rgba(0,212,255,0.3);
+z-index: 200; white-space: nowrap;
 }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 
 </head>
 <body>
+<div id="stars"></div>
 
-<!-- Top Bar -->
+<!-- POINTLESS OVERLAY -->
 
-<div id="topbar">
-  <div class="logo">POINT<span>LESS</span></div>
-  <div class="btn-group">
-    <span class="mode-badge" id="mode-badge">ADMIN</span>
-    <button class="btn btn-next" id="btn-next" onclick="nextQuestion()" style="display:none">Next →</button>
-    <button class="btn btn-mode" onclick="toggleMode()">▶ Toggle Mode</button>
-    <button class="btn btn-danger" onclick="confirmClearAll()">✕ Clear All</button>
-  </div>
+<div id="pointless-overlay">
+  <div id="pointless-banner">POINTLESS</div>
+  <div id="pointless-sub">That answer was worth zero points</div>
+  <button id="pointless-dismiss">Dismiss</button>
 </div>
 
-<div id="main">
+<div id="toast"></div>
 
-  <!-- ADMIN MODE -->
+<div id="red-flash"></div>
 
-  <div id="admin-mode">
-    <div class="admin-header">Creator Mode</div>
-    <div class="admin-sub">Build your question board. All questions auto-save to localStorage.</div>
+<div id="root">
+
+  <!-- ADMIN TOGGLE -->
+
+<button id="admin-toggle">⚙ Admin Dashboard</button>
+
+  <!-- ADMIN PANEL -->
+
+  <section id="admin-panel">
+    <div class="admin-title">// Admin Dashboard — Question Bank</div>
+    <div class="admin-grid">
 
 ```
-<div class="form-section">
-  <h3>Add New Question</h3>
-  <label>Question Title</label>
-  <input type="text" id="q-title" placeholder="e.g. Name a capital city of Europe">
-
-  <label>Answers & Points (Answer : Points)</label>
-  <div id="answers-container">
-    <div class="answer-row">
-      <input type="text" placeholder="Answer" class="ans-text">
-      <input type="number" placeholder="Pts" class="ans-pts" min="0" max="100">
-      <button class="btn-remove-answer" onclick="removeAnswerRow(this)">×</button>
+  <!-- ADD QUESTION FORM -->
+  <div class="admin-form">
+    <div>
+      <div class="field-label">Question Title</div>
+      <input class="inp" id="q-title-inp" placeholder="e.g. Name a type of cheese" />
+    </div>
+    <div>
+      <div class="field-label">Answers &amp; Points (0–100)</div>
+      <div class="answers-builder" id="answers-builder"></div>
+      <button class="btn btn-ghost btn-sm" id="add-answer-row" style="margin-top:8px; width:100%">+ Add Answer</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-cyan" id="save-q-btn" style="flex:1">Save Question</button>
+      <button class="btn btn-ghost btn-sm" id="clear-form-btn">Clear</button>
     </div>
   </div>
-  <button class="btn-add-answer" onclick="addAnswerRow()">+ Add Answer</button>
 
-  <button class="btn-save-q" onclick="saveQuestion()">Save Question</button>
-</div>
-
-<hr class="section-divider">
-
-<div class="form-section">
-  <h3>Saved Questions (<span id="q-count">0</span>)</h3>
-  <div id="saved-list" class="saved-list">
-    <div class="empty-state">No questions saved yet.</div>
-  </div>
-</div>
-```
-
-  </div>
-
-  <!-- PLAY MODE -->
-
-  <div id="play-mode" style="display:none">
-
-```
-<div class="play-question" id="play-q-area">
-  <!-- dynamically filled -->
-</div>
-
-<div class="score-area">
-  <div class="column-side-labels" id="side-labels">
-    <!-- dynamically filled -->
-  </div>
-
-  <div class="column-wrap">
-    <div class="column-score-num" id="score-display">—</div>
-    <div class="score-column-outer">
-      <div class="score-column-fill" id="score-fill"></div>
-      <div class="tick-marks" id="tick-marks"></div>
-      <div class="col-glow-effect" id="col-glow"></div>
+  <!-- QUESTION LIST -->
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="field-label" style="margin:0">Saved Questions</div>
+      <button class="btn btn-ghost btn-sm" id="clear-all-btn">Clear All</button>
     </div>
+    <div class="q-list" id="q-list"></div>
   </div>
-</div>
 
-<div class="answer-input-area">
-  <div class="answer-input-wrap">
-    <input type="text" id="answer-input" placeholder="TYPE YOUR ANSWER" autocomplete="off">
-    <button class="btn-submit" id="btn-submit" onclick="submitAnswer()">CHECK</button>
-  </div>
-  <div class="result-display" id="result-display"></div>
 </div>
 ```
 
+  </section>
+
+  <!-- GAME BOARD -->
+
+  <section id="game-board">
+
+```
+<!-- THE COLUMN -->
+<div id="column-wrap">
+  <div class="col-label-top">100</div>
+  <div id="column-outer">
+    <div id="column-fill"></div>
+    <div id="score-notch">—</div>
+  </div>
+  <div class="col-label-bot">0</div>
+</div>
+
+<!-- DISPLAY PANEL -->
+<div id="display-panel">
+
+  <!-- Question selector -->
+  <div id="question-select-row">
+    <select id="question-select">
+      <option value="">— Select a question —</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" id="reset-round-btn">↺ Reset Round</button>
+  </div>
+
+  <!-- Current question -->
+  <div id="q-display">Select a question above to begin.</div>
+
+  <!-- Score -->
+  <div id="score-badge">Current score: <span id="score-val">100</span></div>
+
+  <!-- Input -->
+  <div id="input-row">
+    <input class="inp" id="answer-input" placeholder="Type contestant's answer…" autocomplete="off" />
+    <button id="submit-btn">Submit</button>
+  </div>
+
+  <!-- Result -->
+  <div id="result-area">
+    <div id="result-msg"></div>
+    <div id="big-x">✕</div>
+  </div>
+
+  <!-- History -->
+  <div id="history-wrap">
+    <div class="history-label">// Round History</div>
+    <div id="history-list"></div>
   </div>
 
 </div>
+```
 
-<!-- POINTLESS Banner -->
+  </section>
 
-<div id="pointless-banner">
-  <div class="banner-word">POINTLESS!</div>
-  <div class="banner-sub">INCREDIBLE</div>
-  <button class="banner-dismiss" onclick="dismissBanner()">Continue</button>
-</div>
-
-<!-- Particles -->
-
-<div id="particles"></div>
-
-<!-- Toast -->
-
-<div id="toast">Saved!</div>
+</div><!-- /root -->
 
 <script>
-  // ============================================================
-  // DATA
-  // ============================================================
-  let questions = [];
-  let currentQIndex = 0;
-  let isPlayMode = false;
-  let isAnimating = false;
+/* ════════════════════════════════════════════════════
+   DATA LAYER — localStorage
+════════════════════════════════════════════════════ */
+const STORE_KEY = 'pointless_questions_v2';
 
-  function loadData() {
-    try {
-      const stored = localStorage.getItem('pointless_questions');
-      questions = stored ? JSON.parse(stored) : [];
-    } catch(e) { questions = []; }
-  }
+function loadQuestions() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+function saveQuestions(qs) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(qs));
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
-  function saveData() {
-    localStorage.setItem('pointless_questions', JSON.stringify(questions));
-  }
+/* ════════════════════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════════════════════ */
+const adminPanel   = document.getElementById('admin-panel');
+const adminToggle  = document.getElementById('admin-toggle');
+const answersBldr  = document.getElementById('answers-builder');
+const qTitleInp    = document.getElementById('q-title-inp');
+const qList        = document.getElementById('q-list');
 
-  // ============================================================
-  // ADMIN MODE
-  // ============================================================
-  function addAnswerRow() {
-    const container = document.getElementById('answers-container');
-    const row = document.createElement('div');
-    row.className = 'answer-row';
-    row.innerHTML = `
-      <input type="text" placeholder="Answer" class="ans-text">
-      <input type="number" placeholder="Pts" class="ans-pts" min="0" max="100">
-      <button class="btn-remove-answer" onclick="removeAnswerRow(this)">×</button>
-    `;
-    container.appendChild(row);
-  }
+let adminVisible = false;
+adminToggle.addEventListener('click', () => {
+  adminVisible = !adminVisible;
+  adminPanel.classList.toggle('hidden', !adminVisible);
+  adminToggle.textContent = adminVisible ? '✕ Close Admin' : '⚙ Admin Dashboard';
+});
+// Start hidden
+adminPanel.classList.add('hidden');
 
-  function removeAnswerRow(btn) {
-    const rows = document.querySelectorAll('.answer-row');
-    if (rows.length <= 1) { showToast('Need at least one answer row'); return; }
-    btn.closest('.answer-row').remove();
-  }
+/* Answer rows */
+function createAnswerRow(answer='', points='') {
+  const row = document.createElement('div');
+  row.className = 'answer-row';
+  row.innerHTML = `
+    <input class="inp" placeholder="Answer text" value="${escHtml(answer)}" data-field="answer"/>
+    <input class="inp" placeholder="Pts" type="number" min="0" max="100" value="${points}" data-field="points"/>
+    <button class="btn-icon" data-action="del-row" title="Remove">×</button>
+  `;
+  row.querySelector('[data-action=del-row]').addEventListener('click', () => {
+    if (answersBldr.children.length > 1) row.remove();
+  });
+  answersBldr.appendChild(row);
+}
+function clearAnswerRows() {
+  answersBldr.innerHTML = '';
+  createAnswerRow();
+}
+clearAnswerRows();
 
-  function saveQuestion() {
-    const title = document.getElementById('q-title').value.trim();
-    if (!title) { showToast('Enter a question title!'); return; }
+document.getElementById('add-answer-row').addEventListener('click', () => createAnswerRow());
 
-    const rows = document.querySelectorAll('.answer-row');
-    const answers = [];
-    let valid = true;
+document.getElementById('clear-form-btn').addEventListener('click', () => {
+  qTitleInp.value = '';
+  clearAnswerRows();
+});
 
-    rows.forEach(row => {
-      const text = row.querySelector('.ans-text').value.trim();
-      const pts  = parseInt(row.querySelector('.ans-pts').value);
-      if (text && !isNaN(pts)) {
-        answers.push({ text, pts: Math.max(0, Math.min(100, pts)) });
-      }
-    });
-
-    if (answers.length === 0) { showToast('Add at least one valid answer!'); return; }
-
-    questions.push({ title, answers });
-    saveData();
-    renderSavedList();
-
-    // Reset form
-    document.getElementById('q-title').value = '';
-    document.getElementById('answers-container').innerHTML = `
-      <div class="answer-row">
-        <input type="text" placeholder="Answer" class="ans-text">
-        <input type="number" placeholder="Pts" class="ans-pts" min="0" max="100">
-        <button class="btn-remove-answer" onclick="removeAnswerRow(this)">×</button>
-      </div>`;
-
-    showToast('Question saved!');
-  }
-
-  function deleteQuestion(index) {
-    questions.splice(index, 1);
-    saveData();
-    renderSavedList();
-  }
-
-  function renderSavedList() {
-    const list = document.getElementById('saved-list');
-    document.getElementById('q-count').textContent = questions.length;
-
-    if (questions.length === 0) {
-      list.innerHTML = '<div class="empty-state">No questions saved yet.</div>';
-      return;
-    }
-
-    list.innerHTML = questions.map((q, i) => `
-      <div class="saved-q-card">
-        <div>
-          <div class="q-title">${escHtml(q.title)}</div>
-          <div class="q-count">${q.answers.length} answer${q.answers.length !== 1 ? 's' : ''}</div>
-        </div>
-        <button class="btn-del-q" onclick="deleteQuestion(${i})">Delete</button>
-      </div>
-    `).join('');
-  }
-
-  function confirmClearAll() {
-    if (questions.length === 0) { showToast('Nothing to clear'); return; }
-    if (confirm('Clear ALL saved questions? This cannot be undone.')) {
-      questions = [];
-      saveData();
-      renderSavedList();
-      if (isPlayMode) renderPlayMode();
-      showToast('All questions cleared');
-    }
-  }
-
-  // ============================================================
-  // MODE TOGGLE
-  // ============================================================
-  function toggleMode() {
-    isPlayMode = !isPlayMode;
-    document.getElementById('admin-mode').style.display = isPlayMode ? 'none' : 'block';
-    document.getElementById('play-mode').style.display   = isPlayMode ? 'flex' : 'none';
-    document.getElementById('mode-badge').textContent = isPlayMode ? 'PLAY' : 'ADMIN';
-    document.getElementById('btn-next').style.display = isPlayMode ? 'inline-flex' : 'none';
-
-    if (isPlayMode) {
-      currentQIndex = 0;
-      renderPlayMode();
-    }
-  }
-
-  // ============================================================
-  // PLAY MODE
-  // ============================================================
-  function renderPlayMode() {
-    const area = document.getElementById('play-q-area');
-    resetColumn();
-
-    if (questions.length === 0) {
-      area.innerHTML = `
-        <div class="no-questions">
-          <div class="icon">📋</div>
-          <h2>No Questions Yet</h2>
-          <p>Switch to Admin Mode and add some questions first.</p>
-        </div>`;
-      document.getElementById('answer-input').style.display = 'none';
-      document.getElementById('btn-submit').style.display = 'none';
-      document.getElementById('score-area') && (document.querySelector('.score-area').style.display = 'none');
-      return;
-    }
-
-    document.getElementById('answer-input').style.display = '';
-    document.getElementById('btn-submit').style.display = '';
-    document.querySelector('.score-area').style.display = '';
-
-    const q = questions[currentQIndex];
-    area.innerHTML = `
-      <div class="play-q-label">Question ${currentQIndex + 1} of ${questions.length}</div>
-      <div class="play-q-text">${escHtml(q.title)}</div>
-      <div class="q-nav">Type an answer and click CHECK</div>
-    `;
-
-    document.getElementById('answer-input').value = '';
-    document.getElementById('result-display').innerHTML = '';
-    document.getElementById('answer-input').focus();
-
-    buildTickMarks();
-    buildSideLabels();
-    setColumnHeight(0, false);
-    document.getElementById('score-display').textContent = '—';
-  }
-
-  function buildTickMarks() {
-    const container = document.getElementById('tick-marks');
-    container.innerHTML = '';
-    for (let v = 0; v <= 100; v += 5) {
-      const pct = v / 100;
-      const tick = document.createElement('div');
-      tick.className = 'tick' + (v % 25 === 0 ? ' major' : '');
-      tick.style.bottom = (pct * 100) + '%';
-      container.appendChild(tick);
-
-      if (v % 25 === 0) {
-        const lbl = document.createElement('div');
-        lbl.className = 'tick-label';
-        lbl.style.bottom = (pct * 100) + '%';
-        lbl.textContent = v;
-        container.appendChild(lbl);
-      }
-    }
-  }
-
-  function buildSideLabels() {
-    const container = document.getElementById('side-labels');
-    container.innerHTML = '';
-    [100, 75, 50, 25, 0].forEach(v => {
-      const lbl = document.createElement('div');
-      lbl.className = 'side-label';
-      lbl.textContent = v;
-      container.appendChild(lbl);
-    });
-  }
-
-  function resetColumn() {
-    const fill = document.getElementById('score-fill');
-    fill.style.height = '0%';
-    fill.className = 'score-column-fill';
-    document.getElementById('col-glow').className = 'col-glow-effect';
-    document.getElementById('score-display').textContent = '—';
-    document.getElementById('score-display').style.color = '';
-  }
-
-  function setColumnHeight(pct, animated) {
-    const fill = document.getElementById('score-fill');
-    fill.style.transition = animated ? 'height 0.05s linear' : 'none';
-    fill.style.height = pct + '%';
-  }
-
-  function submitAnswer() {
-    if (isAnimating) return;
-    if (questions.length === 0) return;
-
-    const input = document.getElementById('answer-input');
-    const typed = input.value.trim().toLowerCase();
-    if (!typed) { showToast('Type an answer first'); return; }
-
-    const q = questions[currentQIndex];
-    const match = q.answers.find(a => a.text.toLowerCase() === typed);
-
-    document.getElementById('btn-submit').disabled = true;
-    document.getElementById('answer-input').disabled = true;
-
-    if (!match) {
-      // Wrong answer
-      animateWrong(typed);
-    } else {
-      // Correct — animate column
-      animateColumn(match.pts, typed);
-    }
-  }
-
-  function animateColumn(targetScore, answerText) {
-    isAnimating = true;
-    const fill = document.getElementById('score-fill');
-    const scoreNum = document.getElementById('score-display');
-    fill.className = 'score-column-fill'; // reset classes
-
-    let current = 100;
-    const totalTime = 3500; // ms
-    const steps = 80;
-    const intervalMs = totalTime / steps;
-
-    setColumnHeight(100, false);
-    scoreNum.textContent = '100';
-
-    const diff = current - targetScore;
-    const stepSize = diff / steps;
-    let step = 0;
-
-    const interval = setInterval(() => {
-      step++;
-      current = Math.max(targetScore, 100 - stepSize * step);
-      setColumnHeight(current, true);
-      scoreNum.textContent = Math.round(current);
-
-      if (Math.round(current) <= targetScore) {
-        clearInterval(interval);
-        current = targetScore;
-        setColumnHeight(current, false);
-        scoreNum.textContent = targetScore;
-        isAnimating = false;
-
-        // Final state
-        if (targetScore === 0) {
-          triggerPointless(answerText);
-        } else {
-          showResult(answerText, targetScore, 'correct');
-          document.getElementById('btn-submit').disabled = false;
-          document.getElementById('answer-input').disabled = false;
-          document.getElementById('answer-input').value = '';
-          document.getElementById('answer-input').focus();
-        }
-      }
-    }, intervalMs);
-  }
-
-  function animateWrong(answerText) {
-    isAnimating = true;
-    const fill = document.getElementById('score-fill');
-    const scoreNum = document.getElementById('score-display');
-
-    // Quick rise to 100
-    fill.className = 'score-column-fill wrong';
-    setColumnHeight(100, false);
-    setTimeout(() => setColumnHeight(100, false), 10);
-    scoreNum.textContent = '×';
-    scoreNum.style.color = 'var(--col-red)';
-
-    showResult(answerText, null, 'wrong');
-    isAnimating = false;
-
-    setTimeout(() => {
-      document.getElementById('btn-submit').disabled = false;
-      document.getElementById('answer-input').disabled = false;
-      scoreNum.style.color = '';
-      document.getElementById('answer-input').value = '';
-      setColumnHeight(0, true);
-      scoreNum.textContent = '—';
-      fill.className = 'score-column-fill';
-      document.getElementById('result-display').innerHTML = '';
-      document.getElementById('answer-input').focus();
-    }, 2200);
-  }
-
-  function showResult(answer, score, type) {
-    const display = document.getElementById('result-display');
-
-    if (type === 'wrong') {
-      display.innerHTML = `
-        <div class="wrong-x">✗</div>
-        <div class="result-answer" style="color:#ff6666">${escHtml(answer)}</div>
-        <div class="result-tag wrong">Not on the board</div>
-      `;
-    } else if (type === 'correct') {
-      display.innerHTML = `
-        <div class="result-answer">${escHtml(answer)}</div>
-        <div class="result-tag correct">${score} point${score !== 1 ? 's' : ''}</div>
-      `;
-    }
-  }
-
-  function triggerPointless(answerText) {
-    const fill = document.getElementById('score-fill');
-    fill.className = 'score-column-fill pointless';
-    document.getElementById('col-glow').className = 'col-glow-effect active';
-    document.getElementById('score-display').textContent = '0';
-    document.getElementById('score-display').style.color = 'var(--col-gold)';
-
-    spawnParticles();
-
-    setTimeout(() => {
-      document.getElementById('pointless-banner').classList.add('visible');
-    }, 400);
-  }
-
-  function dismissBanner() {
-    document.getElementById('pointless-banner').classList.remove('visible');
-    document.getElementById('col-glow').className = 'col-glow-effect';
-    document.getElementById('score-fill').className = 'score-column-fill';
-    document.getElementById('score-display').style.color = '';
-    setColumnHeight(0, false);
-    document.getElementById('score-display').textContent = '—';
-    document.getElementById('result-display').innerHTML = '';
-    document.getElementById('answer-input').value = '';
-    document.getElementById('btn-submit').disabled = false;
-    document.getElementById('answer-input').disabled = false;
-    document.getElementById('answer-input').focus();
-    document.getElementById('particles').innerHTML = '';
-  }
-
-  function nextQuestion() {
-    if (questions.length === 0) return;
-    currentQIndex = (currentQIndex + 1) % questions.length;
-    renderPlayMode();
-  }
-
-  // ============================================================
-  // PARTICLES
-  // ============================================================
-  function spawnParticles() {
-    const container = document.getElementById('particles');
-    container.innerHTML = '';
-    const colors = ['#ffd700', '#ffec6e', '#fff8c0', '#ffaa00', '#ff6600'];
-
-    for (let i = 0; i < 80; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      const x = Math.random() * window.innerWidth;
-      const y = Math.random() * window.innerHeight;
-      const tx = (Math.random() - 0.5) * 400 + 'px';
-      const ty = -(Math.random() * 500 + 100) + 'px';
-      const dur = (Math.random() * 2 + 1.5) + 's';
-      p.style.cssText = `left:${x}px;top:${y}px;background:${colors[Math.floor(Math.random()*colors.length)]};--tx:${tx};--ty:${ty};--dur:${dur};animation-delay:${Math.random()*0.5}s`;
-      container.appendChild(p);
-    }
-  }
-
-  // ============================================================
-  // UTILITIES
-  // ============================================================
-  function escHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  let toastTimer;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
-  }
-
-  // Enter key support
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && isPlayMode && !isAnimating) {
-      if (document.activeElement === document.getElementById('answer-input')) {
-        submitAnswer();
-      }
+document.getElementById('save-q-btn').addEventListener('click', () => {
+  const title = qTitleInp.value.trim();
+  if (!title) { toast('Question title required.'); return; }
+  const rows = [...answersBldr.querySelectorAll('.answer-row')];
+  const answers = [];
+  let valid = true;
+  rows.forEach(r => {
+    const a = r.querySelector('[data-field=answer]').value.trim();
+    const p = parseInt(r.querySelector('[data-field=points]').value, 10);
+    if (a) {
+      if (isNaN(p) || p < 0 || p > 100) { toast('Points must be 0–100'); valid = false; return; }
+      answers.push({ text: a, points: p });
     }
   });
+  if (!valid) return;
+  if (!answers.length) { toast('Add at least one answer.'); return; }
 
-  // ============================================================
-  // INIT
-  // ============================================================
-  loadData();
-  renderSavedList();
+  const qs = loadQuestions();
+  qs.push({ id: genId(), title, answers });
+  saveQuestions(qs);
+  renderQList();
+  populateSelector();
+  qTitleInp.value = '';
+  clearAnswerRows();
+  toast('Question saved!');
+});
+
+document.getElementById('clear-all-btn').addEventListener('click', () => {
+  if (!confirm('Delete ALL questions?')) return;
+  saveQuestions([]);
+  renderQList();
+  populateSelector();
+  toast('All questions cleared.');
+});
+
+function renderQList() {
+  const qs = loadQuestions();
+  qList.innerHTML = '';
+  if (!qs.length) {
+    qList.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">No questions saved yet.</div>';
+    return;
+  }
+  qs.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'q-card' + (activeQId === q.id ? ' active' : '');
+    card.dataset.id = q.id;
+    const ansPreview = q.answers.map(a => `${a.text}(${a.points})`).join(' · ');
+    card.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div class="q-card-title">${escHtml(q.title)}</div>
+        <div class="q-card-answers">${escHtml(ansPreview)}</div>
+      </div>
+      <button class="btn-icon q-card-del" data-del="${q.id}" title="Delete">×</button>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.dataset.del) return; // handled below
+      loadQuestion(q.id);
+    });
+    card.querySelector('[data-del]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newQs = loadQuestions().filter(x => x.id !== q.id);
+      saveQuestions(newQs);
+      if (activeQId === q.id) { activeQId = null; resetBoard(); }
+      renderQList();
+      populateSelector();
+      toast('Question deleted.');
+    });
+    qList.appendChild(card);
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   GAME STATE
+════════════════════════════════════════════════════ */
+let activeQId   = null;
+let activeQ     = null;
+let currentScore = 100;
+let roundHistory = [];
+
+const qDisplay       = document.getElementById('q-display');
+const questionSelect = document.getElementById('question-select');
+const answerInput    = document.getElementById('answer-input');
+const submitBtn      = document.getElementById('submit-btn');
+const resultMsg      = document.getElementById('result-msg');
+const bigX           = document.getElementById('big-x');
+const scoreVal       = document.getElementById('score-val');
+const historyList    = document.getElementById('history-list');
+const columnFill     = document.getElementById('column-fill');
+const scoreNotch     = document.getElementById('score-notch');
+
+function populateSelector() {
+  const qs = loadQuestions();
+  const prev = questionSelect.value;
+  questionSelect.innerHTML = '<option value="">— Select a question —</option>';
+  qs.forEach(q => {
+    const opt = document.createElement('option');
+    opt.value = q.id;
+    opt.textContent = q.title;
+    questionSelect.appendChild(opt);
+  });
+  if (prev && qs.find(q => q.id === prev)) questionSelect.value = prev;
+}
+
+questionSelect.addEventListener('change', () => {
+  if (questionSelect.value) loadQuestion(questionSelect.value);
+  else resetBoard();
+});
+
+function loadQuestion(id) {
+  const qs = loadQuestions();
+  const q  = qs.find(x => x.id === id);
+  if (!q) return;
+  activeQId = id;
+  activeQ   = q;
+  questionSelect.value = id;
+  qDisplay.textContent  = q.title;
+  resetBoard(false); // reset score/anim but keep question
+  renderQList();
+  answerInput.focus();
+}
+
+function resetBoard(clearQ = true) {
+  if (countdownTimer !== null) { clearInterval(countdownTimer); countdownTimer = null; }
+  submitBtn.disabled = false;
+  answerInput.disabled = false;
+  currentScore  = 100;
+  roundHistory  = [];
+  setColumnHeight(100);
+  scoreVal.textContent = '100';
+  scoreNotch.textContent = '100';
+  resultMsg.textContent = '';
+  resultMsg.className = '';
+  bigX.className = '';
+  historyList.innerHTML = '';
+  answerInput.value = '';
+  if (clearQ) {
+    activeQId = null; activeQ = null;
+    qDisplay.textContent = 'Select a question above to begin.';
+    questionSelect.value = '';
+  }
+}
+
+document.getElementById('reset-round-btn').addEventListener('click', () => {
+  resetBoard(!activeQ);
+  if (activeQ) { qDisplay.textContent = activeQ.title; }
+  toast('Round reset.');
+});
+
+/* ── Column: instant set (used for reset) ── */
+function setColumnHeight(score) {
+  const pct = Math.max(0, Math.min(100, score));
+  columnFill.style.transition = 'none';
+  scoreNotch.style.transition = 'none';
+  void columnFill.offsetHeight; // force reflow so transition:none sticks
+  columnFill.style.height     = pct + '%';
+  scoreNotch.style.bottom     = pct + '%';
+  scoreNotch.textContent      = Math.round(pct);
+  scoreVal.textContent        = Math.round(pct);
+}
+
+/* ── Animated countdown (TV-show style) ── */
+let countdownTimer = null;
+
+function animateCountdown(fromScore, toScore, onComplete) {
+  if (countdownTimer !== null) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+
+  columnFill.style.transition = 'height 0.07s linear';
+  scoreNotch.style.transition = 'bottom 0.07s linear';
+
+  const totalSteps = fromScore - toScore;
+  if (totalSteps <= 0) { onComplete(); return; }
+
+  const BASE_INTERVAL  = 55;
+  const SLOW_THRESHOLD = 10;
+  const SLOW_INTERVAL  = 120;
+
+  let current = fromScore;
+
+  function tick() {
+    current -= 1;
+    const pct = Math.max(0, current);
+    columnFill.style.height = pct + '%';
+    scoreNotch.style.bottom = pct + '%';
+    scoreNotch.textContent  = pct;
+    scoreVal.textContent    = pct;
+
+    if (current <= toScore) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      onComplete();
+      return;
+    }
+
+    if (current === SLOW_THRESHOLD) {
+      clearInterval(countdownTimer);
+      countdownTimer = setInterval(tick, SLOW_INTERVAL);
+    }
+  }
+
+  const startInterval = fromScore > SLOW_THRESHOLD ? BASE_INTERVAL : SLOW_INTERVAL;
+  countdownTimer = setInterval(tick, startInterval);
+}
+
+/* ── Submit logic ── */
+function submitAnswer() {
+  if (!activeQ) { toast('Select a question first.'); return; }
+  if (countdownTimer !== null) return;
+  const raw = answerInput.value.trim();
+  if (!raw) return;
+
+  resultMsg.classList.remove('show');
+  bigX.classList.remove('show');
+  resultMsg.className = '';
+
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+  const match = activeQ.answers.find(a => norm(a.text) === norm(raw));
+
+  answerInput.value = '';
+  submitBtn.disabled = true;
+  answerInput.disabled = true;
+
+  if (match) {
+    const pts = match.points;
+    // Always count down from 100 — each contestant starts fresh
+    const fromScore = 100;
+    currentScore = pts;
+
+    // Snap column back to 100 instantly, then start countdown
+    setColumnHeight(100);
+    // Small delay so the snap is visible before the drop begins
+    setTimeout(() => {
+      animateCountdown(fromScore, pts, () => {
+        submitBtn.disabled = false;
+        answerInput.disabled = false;
+        answerInput.focus();
+
+        if (pts === 0) {
+          resultMsg.textContent = '★ POINTLESS ★';
+          resultMsg.className = 'show pointless';
+          showPointlessOverlay();
+        } else {
+          resultMsg.textContent = match.text.toUpperCase() + ' — ' + pts + ' POINTS';
+          resultMsg.className = 'show correct';
+        }
+        addHistory(raw, pts, pts === 0 ? 'zero' : 'ok');
+      });
+    }, 120);
+
+  } else {
+    // Wrong — no countdown, instant X + red screen flash
+    submitBtn.disabled = false;
+    answerInput.disabled = false;
+    resultMsg.textContent = 'NOT ON THE BOARD';
+    resultMsg.className = 'show wrong';
+    bigX.className = 'show';
+    addHistory(raw, null, 'fail');
+    answerInput.focus();
+    // Red flash
+    const rf = document.getElementById('red-flash');
+    rf.classList.remove('flash');
+    void rf.offsetHeight; // reflow to restart animation
+    rf.classList.add('flash');
+  }
+}
+
+submitBtn.addEventListener('click', submitAnswer);
+answerInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(); });
+
+/* ── History ── */
+function addHistory(answer, pts, type) {
+  roundHistory.unshift({ answer, pts, type });
+  const chip = document.createElement('span');
+  chip.className = 'hist-chip ' + type;
+  chip.textContent = type === 'fail' ? `✕ ${answer}` : `${answer} (${pts})`;
+  historyList.prepend(chip);
+}
+
+/* ── Pointless overlay ── */
+const overlay  = document.getElementById('pointless-overlay');
+const dismissB = document.getElementById('pointless-dismiss');
+function showPointlessOverlay() {
+  overlay.classList.add('active');
+}
+dismissB.addEventListener('click', () => overlay.classList.remove('active'));
+overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+/* ── Toast ── */
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg) {
+  clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+
+/* ── Helpers ── */
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Column number labels ── */
+(function buildColNumbers() {
+  const outer = document.getElementById('column-outer');
+  [0,10,20,30,40,50,60,70,80,90,100].forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'col-num';
+    el.textContent = n;
+    // position: bottom = n% from bottom
+    el.style.bottom = n + '%';
+    outer.appendChild(el);
+  });
+})();
+
+/* ── Init ── */
+setColumnHeight(100);
+renderQList();
+populateSelector();
 </script>
 
 </body>
